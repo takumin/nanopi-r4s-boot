@@ -1,0 +1,20 @@
+name: CI
+on:
+  push:
+    branches:
+    - 'main'
+permissions:
+  contents: read
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Packages
+      run: sudo apt-get install -yqq device-tree-compiler swig gcc-arm-none-eabi crossbuild-essential-arm64
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Build
+      run: make

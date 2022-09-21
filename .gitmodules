@@ -1,0 +1,6 @@
+[submodule "atf"]
+	path = atf
+	url = git@github.com:ARM-software/arm-trusted-firmware.git
+[submodule "u-boot"]
+	path = u-boot
+	url = git@github.com:u-boot/u-boot.git
