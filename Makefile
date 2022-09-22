@@ -15,7 +15,6 @@ atf:
 		ARCH=aarch64 \
 		DEBUG=0 \
 		bl31
-	@file $(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf
 
 .PHONY: u-boot
 u-boot: atf
@@ -24,14 +23,19 @@ u-boot: atf
 		O=$(BUILD_BASE_DIR)/u-boot \
 		nanopi-r4s-rk3399_defconfig
 	@cp $(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf $(BUILD_BASE_DIR)/u-boot
+	@sed -i -E 's/^CONFIG_BOOTDELAY=.*/CONFIG_BOOTDELAY=0/' $(BUILD_BASE_DIR)/u-boot/.config
 	@$(MAKE) -C $@ -j $(shell nproc) \
 		CROSS_COMPILE=$(AARCH64_LINUX_CROSS_COMPILE) \
 		O=$(BUILD_BASE_DIR)/u-boot
 
 .PHONY: flash
 flash: u-boot
-	@sudo dd if=$(BUILD_BASE_DIR)/u-boot/idbloader.img of=/dev/disk/by-id/$(MICRO_SD_DEV_ID) seek=64 conv=notrunc
-	@sudo dd if=$(BUILD_BASE_DIR)/u-boot/u-boot.itb of=/dev/disk/by-id/$(MICRO_SD_DEV_ID) seek=16384 conv=notrunc
+	@sudo dd if=/dev/zero of=/dev/disk/by-id/$(MICRO_SD_DEV_ID) bs=1M count=16
+	@sudo sync
+	@sudo sgdisk -Z /dev/disk/by-id/$(MICRO_SD_DEV_ID)
+	@sudo sync
+	@sudo dd if=$(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin of=/dev/disk/by-id/$(MICRO_SD_DEV_ID) seek=64
+	@sudo sync
 
 .PHONY: clean
 clean:
