@@ -1,5 +1,6 @@
-# nanopi-r4s-boot
-FriendlyElec Nanopi R4S Linux Boot
+# nanopi-r4s-uboot
+
+FriendlyElec NanoPi R4S U-Boot
 
 # Build
 
