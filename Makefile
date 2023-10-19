@@ -19,6 +19,7 @@ atf:
 .PHONY: u-boot
 u-boot: atf
 	@$(MAKE) -C $@ -j $(shell nproc) \
+		BL31=$(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf \
 		CROSS_COMPILE=$(AARCH64_LINUX_CROSS_COMPILE) \
 		O=$(BUILD_BASE_DIR)/u-boot \
 		nanopi-r4s-rk3399_defconfig
@@ -29,11 +30,12 @@ u-boot: atf
 	@echo "CONFIG_MISC_INIT_R=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_ROCKCHIP_EFUSE=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@$(MAKE) -C $@ -j $(shell nproc) \
+		BL31=$(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf \
 		CROSS_COMPILE=$(AARCH64_LINUX_CROSS_COMPILE) \
 		O=$(BUILD_BASE_DIR)/u-boot \
 		olddefconfig
-	@cp $(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf $(BUILD_BASE_DIR)/u-boot
 	@$(MAKE) -C $@ -j $(shell nproc) \
+		BL31=$(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf \
 		CROSS_COMPILE=$(AARCH64_LINUX_CROSS_COMPILE) \
 		O=$(BUILD_BASE_DIR)/u-boot
 
