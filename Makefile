@@ -47,6 +47,8 @@ $(BUILD_BASE_DIR)/u-boot/.config:
 	@echo "CONFIG_IPV6_ROUTER_DISCOVERY=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_CMD_UUID=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_CMD_FS_UUID=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	@echo "CONFIG_CMD_SQUASHFS=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	@echo "CONFIG_FS_SQUASHFS=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_CMD_DNS=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_CMD_SNTP=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_CMD_WGET=y" >> $(BUILD_BASE_DIR)/u-boot/.config
