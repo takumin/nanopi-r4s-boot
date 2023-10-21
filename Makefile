@@ -12,7 +12,8 @@ PREBOOT_COMMAND             ?= \
 		setenv stderr nc; \
 	fi; \
 	version; \
-	if env exists ntpserverip; then sntp; fi;
+	if env exists ntpserverip; then sntp; fi; \
+	if test ! env exists pxeuuid; then uuid pxeuuid; fi;
 
 .PHONY: default
 default: atf build
@@ -44,6 +45,8 @@ $(BUILD_BASE_DIR)/u-boot/.config:
 	@echo "CONFIG_PROT_TCP_SACK=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_IPV6=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_IPV6_ROUTER_DISCOVERY=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	@echo "CONFIG_CMD_UUID=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	@echo "CONFIG_CMD_FS_UUID=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_CMD_DNS=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_CMD_SNTP=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_CMD_WGET=y" >> $(BUILD_BASE_DIR)/u-boot/.config
