@@ -38,6 +38,7 @@ $(BUILD_BASE_DIR)/u-boot/.config:
 		O=$(BUILD_BASE_DIR)/u-boot \
 		nanopi-r4s-rk3399_defconfig
 	@sed -i -E 's/^CONFIG_BOOTDELAY=.*/CONFIG_BOOTDELAY=3/' $(BUILD_BASE_DIR)/u-boot/.config
+	@echo "CONFIG_DM_RESET=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_BOOTP_NTPSERVER=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_BOOTP_TIMEOFFSET=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_BOOTP_BOOTFILESIZE=y" >> $(BUILD_BASE_DIR)/u-boot/.config
@@ -72,6 +73,21 @@ menuconfig: $(BUILD_BASE_DIR)/u-boot/.config
 		O=$(BUILD_BASE_DIR)/u-boot \
 		menuconfig
 
+.PHONY: savedefconfig
+savedefconfig: $(BUILD_BASE_DIR)/u-boot/defconfig
+$(BUILD_BASE_DIR)/u-boot/defconfig: $(BUILD_BASE_DIR)/u-boot/.config
+	@$(MAKE) -C u-boot -j $(shell nproc) \
+		BL31=$(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf \
+		CROSS_COMPILE=$(AARCH64_LINUX_CROSS_COMPILE) \
+		O=$(BUILD_BASE_DIR)/u-boot \
+		savedefconfig
+
+.PHONY: diffdefconfig
+diffdefconfig: $(BUILD_BASE_DIR)/u-boot/defconfig.diff
+$(BUILD_BASE_DIR)/u-boot/defconfig.diff: $(BUILD_BASE_DIR)/u-boot/defconfig
+	@diff -u $(CURDIR)/u-boot/configs/nanopi-r4s-rk3399_defconfig \
+		$(BUILD_BASE_DIR)/u-boot/defconfig > $(BUILD_BASE_DIR)/u-boot/defconfig.diff || true
+
 .PHONY: build
 build: $(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin
 $(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin: $(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf $(BUILD_BASE_DIR)/u-boot/.config
@@ -82,6 +98,10 @@ $(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin: $(BUILD_BASE_DIR)/atf/rk3399/relea
 
 .PHONY: flash
 flash: $(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin
+	@if [ ! -e "/dev/disk/by-id/$(MICRO_SD_DEV_ID)" ]; then \
+		echo "Not Found: /dev/disk/by-id/$(MICRO_SD_DEV_ID)"; \
+		exit 1; \
+	fi
 	@sudo sync
 	@sudo partprobe
 	@sudo sgdisk -Z /dev/disk/by-id/$(MICRO_SD_DEV_ID)
