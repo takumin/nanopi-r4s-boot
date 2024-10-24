@@ -106,7 +106,8 @@ flash: $(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin
 	@sudo partprobe
 	@sudo sgdisk -Z /dev/disk/by-id/$(MICRO_SD_DEV_ID)
 	@sudo sgdisk -o /dev/disk/by-id/$(MICRO_SD_DEV_ID)
-	@sudo sgdisk -a 1 -n 1:64:32768 -c 1:UBoot /dev/disk/by-id/$(MICRO_SD_DEV_ID)
+	@sudo sgdisk -a 1 -n 1:64:32768 -c 1:UBoot  /dev/disk/by-id/$(MICRO_SD_DEV_ID)
+	@sudo sgdisk      -n 2::-1      -c 2:System /dev/disk/by-id/$(MICRO_SD_DEV_ID)
 	@sudo sgdisk -v /dev/disk/by-id/$(MICRO_SD_DEV_ID)
 	@sudo sync
 	@sudo partprobe
