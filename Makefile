@@ -1,7 +1,7 @@
 BUILD_BASE_DIR              ?= /tmp/nanopi-r4s-boot
 AARCH64_LINUX_CROSS_COMPILE ?= aarch64-linux-gnu-
 ARM_NONE_EABI_CROSS_COMPILE ?= arm-none-eabi-
-MICRO_SD_DEV_ID             ?= usb-Generic_STORAGE_DEVICE_000000000821-0:0
+MICRO_SD_DEV_ID             ?= usb-TS-RDF5_SD_Transcend_000000000037-0:0
 PREBOOT_COMMAND             ?= \
 	setenv autoload dhcp; \
 	dhcp; \
@@ -117,7 +117,11 @@ $(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin: $(BUILD_BASE_DIR)/atf/rk3399/relea
 		O=$(BUILD_BASE_DIR)/u-boot
 
 .PHONY: flash
-flash: $(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin
+flash:
+	@if [ ! -e "u-boot-rockchip.bin" ]; then \
+		echo "Not Found: u-boot-rockchip.bin"; \
+		exit 1; \
+	fi
 	@if [ ! -e "/dev/disk/by-id/$(MICRO_SD_DEV_ID)" ]; then \
 		echo "Not Found: /dev/disk/by-id/$(MICRO_SD_DEV_ID)"; \
 		exit 1; \
@@ -126,14 +130,22 @@ flash: $(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin
 	@sudo partprobe
 	@sudo sgdisk -Z /dev/disk/by-id/$(MICRO_SD_DEV_ID)
 	@sudo sgdisk -o /dev/disk/by-id/$(MICRO_SD_DEV_ID)
-	@sudo sgdisk -a 1 -n 1:64:32768 -c 1:UBoot  /dev/disk/by-id/$(MICRO_SD_DEV_ID)
-	@sudo sgdisk      -n 2::-1      -c 2:System /dev/disk/by-id/$(MICRO_SD_DEV_ID)
-	@sudo sgdisk -v /dev/disk/by-id/$(MICRO_SD_DEV_ID)
+	@sudo sgdisk -a 1 -n 1:64:32768           -c 1:UBoot  /dev/disk/by-id/$(MICRO_SD_DEV_ID)
+	@sudo sgdisk      -n 2::512MiB  -t 2:ef00 -c 2:ESP    /dev/disk/by-id/$(MICRO_SD_DEV_ID)
+	@sudo sgdisk      -n 3::-1                -c 3:System /dev/disk/by-id/$(MICRO_SD_DEV_ID)
+	@sudo sgdisk -p /dev/disk/by-id/$(MICRO_SD_DEV_ID)
 	@sudo sync
 	@sudo partprobe
+	@sudo sync
 	@sudo dd if=/dev/zero of=/dev/disk/by-id/$(MICRO_SD_DEV_ID) bs=1M count=16 seek=64 conv=notrunc
 	@sudo sync
-	@sudo dd if=$(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin of=/dev/disk/by-id/$(MICRO_SD_DEV_ID) seek=64 conv=notrunc
+	@sudo partprobe
+	@sudo sync
+	@sudo dd if=u-boot-rockchip.bin of=/dev/disk/by-id/$(MICRO_SD_DEV_ID) seek=64 conv=notrunc
+	@sudo sync
+	@sudo partprobe
+	@sudo sync
+	@sudo mkfs.fat -F 32 /dev/disk/by-id/$(MICRO_SD_DEV_ID)-part2
 	@sudo sync
 
 .PHONY: clean
