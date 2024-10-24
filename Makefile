@@ -15,8 +15,28 @@ PREBOOT_COMMAND             ?= \
 	if env exists ntpserverip; then sntp; fi; \
 	if test ! env exists pxeuuid; then uuid pxeuuid; fi;
 
+define APT_GET_INSTALL
+	@dpkg -l | awk '{print $$2}' | sed -E '1,5d' | grep -q '^$(1)' || apt-get install --no-install-recommends -y $(1);
+endef
+
 .PHONY: default
 default: atf build
+
+.PHONY: req
+req:
+	$(call APT_GET_INSTALL,flex)
+	$(call APT_GET_INSTALL,bison)
+	$(call APT_GET_INSTALL,gcc)
+	$(call APT_GET_INSTALL,gcc-arm-none-eabi)
+	$(call APT_GET_INSTALL,crossbuild-essential-arm64)
+	$(call APT_GET_INSTALL,device-tree-compiler)
+	$(call APT_GET_INSTALL,swig)
+	$(call APT_GET_INSTALL,python3-dev)
+	$(call APT_GET_INSTALL,python3-pyelftools)
+	$(call APT_GET_INSTALL,python3-setuptools)
+	$(call APT_GET_INSTALL,libssl-dev)
+	$(call APT_GET_INSTALL,libgnutls28-dev)
+	$(call APT_GET_INSTALL,uuid-dev)
 
 .PHONY: atf
 atf: $(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf
