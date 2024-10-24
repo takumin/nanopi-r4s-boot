@@ -11,7 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Install Packages
-      run: sudo apt-get install -yqq device-tree-compiler swig gcc-arm-none-eabi crossbuild-essential-arm64 python3-pyelftools
+      run: >-
+        sudo apt-get install -yqq
+          device-tree-compiler
+          swig
+          gcc-arm-none-eabi
+          crossbuild-essential-arm64
+          python3-pyelftools
+          libgnutls28-dev
     - name: Checkout
       uses: actions/checkout@v3
       with:
