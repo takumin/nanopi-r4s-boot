@@ -10,11 +10,11 @@ jobs:
     name: CI
     runs-on: ubuntu-latest
     steps:
-    - name: Install Packages
-      run: sudo make req
     - name: Checkout
       uses: actions/checkout@v4
       with:
         submodules: true
+    - name: Install Packages
+      run: sudo make req
     - name: Build
       run: make
