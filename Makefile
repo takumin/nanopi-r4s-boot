@@ -5,7 +5,7 @@ AARCH64_LINUX_CROSS_COMPILE ?= aarch64-linux-gnu-
 ARM_NONE_EABI_CROSS_COMPILE ?= arm-none-eabi-
 MICRO_SD_DEV_ID             ?= usb-TS-RDF5_SD_Transcend_000000000037-0:0
 PREBOOT_COMMAND             ?= \
-	setenv autoload dhcp; \
+	setenv autoload no; \
 	dhcp; \
 	if env exists serverip; then \
 		setenv ncip \$$serverip; \
