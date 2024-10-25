@@ -15,6 +15,6 @@ jobs:
       with:
         submodules: true
     - name: Install Packages
-      run: sudo make req
+      run: sudo make require
     - name: Build
       run: make

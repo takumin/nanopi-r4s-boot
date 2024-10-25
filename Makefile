@@ -22,8 +22,8 @@ endef
 .PHONY: default
 default: atf build
 
-.PHONY: req
-req:
+.PHONY: require
+require:
 	$(call APT_GET_INSTALL,gcc)
 	$(call APT_GET_INSTALL,gcc-arm-none-eabi)
 	$(call APT_GET_INSTALL,crossbuild-essential-arm64)
