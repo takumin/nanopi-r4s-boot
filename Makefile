@@ -161,4 +161,4 @@ flash:
 
 .PHONY: clean
 clean:
-	@rm -fr $(BUILD_BASE_DIR)
+	@sudo rm -fr $(BUILD_BASE_DIR)
