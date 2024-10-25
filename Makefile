@@ -1,5 +1,6 @@
 BUILD_BASE_DIR              ?= /tmp/nanopi-r4s-boot
 BUILDER_IMAGE_NAME          ?= takumi/nanopi-r4s-uboot-builder
+BUILDER_DPKG_ARCHITECTURE   ?= $(shell dpkg --print-architecture)
 AARCH64_LINUX_CROSS_COMPILE ?= aarch64-linux-gnu-
 ARM_NONE_EABI_CROSS_COMPILE ?= arm-none-eabi-
 MICRO_SD_DEV_ID             ?= usb-TS-RDF5_SD_Transcend_000000000037-0:0
@@ -17,7 +18,7 @@ PREBOOT_COMMAND             ?= \
 	if test ! env exists pxeuuid; then uuid pxeuuid; fi;
 
 define APT_GET_INSTALL
-	@dpkg -l | awk '{print $$2}' | sed -E '1,5d;s/:.*$$//g' | grep -q '^$(1)$$' || apt-get install --no-install-recommends -y $(1)
+	@dpkg -l | awk '{print $$2}' | sed -E '1,5d' | grep -q '^$(1)$$' || apt-get install --no-install-recommends -y $(1)
 endef
 
 .PHONY: default
@@ -35,9 +36,9 @@ require:
 	$(call APT_GET_INSTALL,python3-dev)
 	$(call APT_GET_INSTALL,python3-pyelftools)
 	$(call APT_GET_INSTALL,python3-setuptools)
-	$(call APT_GET_INSTALL,libssl-dev)
-	$(call APT_GET_INSTALL,libgnutls28-dev)
-	$(call APT_GET_INSTALL,uuid-dev)
+	$(call APT_GET_INSTALL,libssl-dev:$(BUILDER_DPKG_ARCHITECTURE))
+	$(call APT_GET_INSTALL,libgnutls28-dev:$(BUILDER_DPKG_ARCHITECTURE))
+	$(call APT_GET_INSTALL,uuid-dev:$(BUILDER_DPKG_ARCHITECTURE))
 
 .PHONY: docker
 docker:
