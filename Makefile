@@ -38,6 +38,10 @@ req:
 	$(call APT_GET_INSTALL,libgnutls28-dev)
 	$(call APT_GET_INSTALL,uuid-dev)
 
+.PHONY: docker
+docker:
+	@docker build -t nanopi-r4s-uboot-builder .
+
 .PHONY: atf
 atf: $(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf
 $(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf:
