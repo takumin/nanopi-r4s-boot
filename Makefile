@@ -15,7 +15,8 @@ PREBOOT_COMMAND             ?= \
 	fi; \
 	version; \
 	if env exists ntpserverip; then sntp; fi; \
-	if test ! env exists pxeuuid; then uuid pxeuuid; fi;
+	if test ! env exists pxeuuid; then uuid pxeuuid; fi; \
+	setenv boot_targets "mmc0 pxe dhcp";
 
 define APT_GET_INSTALL
 	@dpkg -l | awk '{print $$2}' | sed -E '1,5d' | grep -q '^$(1)$$' || apt-get install --no-install-recommends -y $(1)
@@ -69,24 +70,51 @@ $(BUILD_BASE_DIR)/u-boot/.config:
 		O=$(BUILD_BASE_DIR)/u-boot \
 		nanopi-r4s-rk3399_defconfig
 	@sed -i -E 's/^CONFIG_BOOTDELAY=.*/CONFIG_BOOTDELAY=3/' $(BUILD_BASE_DIR)/u-boot/.config
-	@echo "CONFIG_BOOTP_NTPSERVER=y" >> $(BUILD_BASE_DIR)/u-boot/.config
-	@echo "CONFIG_BOOTP_TIMEOFFSET=y" >> $(BUILD_BASE_DIR)/u-boot/.config
-	@echo "CONFIG_BOOTP_BOOTFILESIZE=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	################################################################################
+	# Enabled TCP
+	################################################################################
 	@echo "CONFIG_PROT_TCP=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_PROT_TCP_SACK=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	################################################################################
+	# Enabled IPv6
+	################################################################################
 	@echo "CONFIG_IPV6=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_IPV6_ROUTER_DISCOVERY=y" >> $(BUILD_BASE_DIR)/u-boot/.config
-	@echo "CONFIG_CMD_UUID=y" >> $(BUILD_BASE_DIR)/u-boot/.config
-	@echo "CONFIG_CMD_FS_UUID=y" >> $(BUILD_BASE_DIR)/u-boot/.config
-	@echo "CONFIG_CMD_SQUASHFS=y" >> $(BUILD_BASE_DIR)/u-boot/.config
-	@echo "CONFIG_FS_SQUASHFS=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	################################################################################
+	# Maintenance Commands
+	################################################################################
 	@echo "CONFIG_CMD_DNS=y" >> $(BUILD_BASE_DIR)/u-boot/.config
-	@echo "CONFIG_CMD_SNTP=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_CMD_WGET=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	################################################################################
+	# BOOTP/DHCP - Set pxeuuid with preboot command
+	################################################################################
+	@echo "CONFIG_CMD_UUID=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	################################################################################
+	# BOOTP/DHCP - Enabled SNTP
+	################################################################################
+	@echo "CONFIG_BOOTP_NTPSERVER=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	@echo "CONFIG_CMD_SNTP=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	################################################################################
+	# BOOTP/DHCP - Prefer Server IP
+	################################################################################
+	@echo "CONFIG_BOOTP_PREFER_SERVERIP=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	################################################################################
+	# BOOTP/DHCP - Request pxelinux.configfile (DHCP Option 209)
+	################################################################################
+	@echo "CONFIG_BOOTP_PXE_DHCP_OPTION=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	################################################################################
+	# Boot Retry
+	################################################################################
 	@echo "CONFIG_BOOT_RETRY=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_BOOT_RETRY_TIME=30" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_RESET_TO_RETRY=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	################################################################################
+	# Network Console
+	################################################################################
 	@echo "CONFIG_NETCONSOLE=y" >> $(BUILD_BASE_DIR)/u-boot/.config
+	################################################################################
+	# Pre Boot Command
+	################################################################################
 	@echo "CONFIG_USE_PREBOOT=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_PREBOOT=\"$(strip $(PREBOOT_COMMAND))\"" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@$(MAKE) -C u-boot -j $(shell nproc) \
@@ -138,6 +166,7 @@ flash:
 	fi
 	@sudo sync
 	@sudo partprobe
+	@sudo sync
 	@sudo sgdisk -Z /dev/disk/by-id/$(MICRO_SD_DEV_ID)
 	@sudo sgdisk -o /dev/disk/by-id/$(MICRO_SD_DEV_ID)
 	@sudo sgdisk -a 1 -n 1:64:32768           -c 1:UBoot  /dev/disk/by-id/$(MICRO_SD_DEV_ID)
