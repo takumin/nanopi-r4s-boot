@@ -16,7 +16,7 @@ PREBOOT_COMMAND             ?= \
 	if test ! env exists pxeuuid; then uuid pxeuuid; fi;
 
 define APT_GET_INSTALL
-	@dpkg -l | awk '{print $$2}' | sed -E '1,5d' | grep -q '^$(1)' || apt-get install --no-install-recommends -y $(1);
+	@dpkg -l | awk '{print $$2}' | sed -E '1,5d;s/:.*$$//g' | grep -q '^$(1)$$' || apt-get install --no-install-recommends -y $(1)
 endef
 
 .PHONY: default
@@ -24,11 +24,11 @@ default: atf build
 
 .PHONY: req
 req:
-	$(call APT_GET_INSTALL,flex)
-	$(call APT_GET_INSTALL,bison)
 	$(call APT_GET_INSTALL,gcc)
 	$(call APT_GET_INSTALL,gcc-arm-none-eabi)
 	$(call APT_GET_INSTALL,crossbuild-essential-arm64)
+	$(call APT_GET_INSTALL,bison)
+	$(call APT_GET_INSTALL,flex)
 	$(call APT_GET_INSTALL,device-tree-compiler)
 	$(call APT_GET_INSTALL,swig)
 	$(call APT_GET_INSTALL,python3-dev)
