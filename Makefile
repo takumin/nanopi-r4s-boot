@@ -1,6 +1,5 @@
 BUILD_BASE_DIR              ?= /tmp/nanopi-r4s-boot
 BUILDER_IMAGE_NAME          ?= takumi/nanopi-r4s-uboot-builder
-BUILDER_DPKG_ARCHITECTURE   ?= $(shell dpkg --print-architecture)
 AARCH64_LINUX_CROSS_COMPILE ?= aarch64-linux-gnu-
 ARM_NONE_EABI_CROSS_COMPILE ?= arm-none-eabi-
 MICRO_SD_DEV_ID             ?= usb-TS-RDF5_SD_Transcend_000000000037-0:0
@@ -16,30 +15,12 @@ PREBOOT_COMMAND             ?= \
 	version; \
 	if env exists ntpserverip; then sntp; fi; \
 	if test ! env exists pxeuuid; then uuid pxeuuid; fi; \
+	setenv board rk3399-nanopi-r4s; \
+	setenv board_name rk3399-nanopi-r4s; \
 	setenv boot_targets "mmc0 pxe dhcp";
-
-define APT_GET_INSTALL
-	@dpkg -l | awk '{print $$2}' | sed -E '1,5d' | grep -q '^$(1)$$' || apt-get install --no-install-recommends -y $(1)
-endef
 
 .PHONY: default
 default: build
-
-.PHONY: require
-require:
-	$(call APT_GET_INSTALL,gcc)
-	$(call APT_GET_INSTALL,gcc-arm-none-eabi)
-	$(call APT_GET_INSTALL,crossbuild-essential-arm64)
-	$(call APT_GET_INSTALL,bison)
-	$(call APT_GET_INSTALL,flex)
-	$(call APT_GET_INSTALL,device-tree-compiler)
-	$(call APT_GET_INSTALL,swig)
-	$(call APT_GET_INSTALL,python3-dev)
-	$(call APT_GET_INSTALL,python3-pyelftools)
-	$(call APT_GET_INSTALL,python3-setuptools)
-	$(call APT_GET_INSTALL,libssl-dev:$(BUILDER_DPKG_ARCHITECTURE))
-	$(call APT_GET_INSTALL,libgnutls28-dev:$(BUILDER_DPKG_ARCHITECTURE))
-	$(call APT_GET_INSTALL,uuid-dev:$(BUILDER_DPKG_ARCHITECTURE))
 
 .PHONY: docker
 docker:
@@ -47,8 +28,7 @@ docker:
 
 .PHONY: build
 build:
-	@mkdir -p $(BUILD_BASE_DIR)
-	@docker run --rm -i -t -v $(CURDIR):/build -v $(BUILD_BASE_DIR):$(BUILD_BASE_DIR) $(BUILDER_IMAGE_NAME):latest
+	@docker run --rm -i -t -v $(CURDIR):/build -v $(BUILD_BASE_DIR):$(BUILD_BASE_DIR) $(BUILDER_IMAGE_NAME):latest make image
 
 .PHONY: atf
 atf: $(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf
