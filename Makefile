@@ -69,7 +69,6 @@ $(BUILD_BASE_DIR)/u-boot/.config:
 		O=$(BUILD_BASE_DIR)/u-boot \
 		nanopi-r4s-rk3399_defconfig
 	@sed -i -E 's/^CONFIG_BOOTDELAY=.*/CONFIG_BOOTDELAY=3/' $(BUILD_BASE_DIR)/u-boot/.config
-	@echo "CONFIG_DM_RESET=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_BOOTP_NTPSERVER=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_BOOTP_TIMEOFFSET=y" >> $(BUILD_BASE_DIR)/u-boot/.config
 	@echo "CONFIG_BOOTP_BOOTFILESIZE=y" >> $(BUILD_BASE_DIR)/u-boot/.config
