@@ -7,4 +7,4 @@ RUN apt-get update \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
-CMD ["make"]
+CMD ["make", "image"]

@@ -1,4 +1,5 @@
 BUILD_BASE_DIR              ?= /tmp/nanopi-r4s-boot
+BUILDER_IMAGE_NAME          ?= takumi/nanopi-r4s-uboot-builder
 AARCH64_LINUX_CROSS_COMPILE ?= aarch64-linux-gnu-
 ARM_NONE_EABI_CROSS_COMPILE ?= arm-none-eabi-
 MICRO_SD_DEV_ID             ?= usb-TS-RDF5_SD_Transcend_000000000037-0:0
@@ -20,7 +21,7 @@ define APT_GET_INSTALL
 endef
 
 .PHONY: default
-default: atf build
+default: build
 
 .PHONY: require
 require:
@@ -40,7 +41,12 @@ require:
 
 .PHONY: docker
 docker:
-	@docker build -t nanopi-r4s-uboot-builder .
+	@docker build -t $(BUILDER_IMAGE_NAME):latest .
+
+.PHONY: build
+build:
+	@mkdir -p $(BUILD_BASE_DIR)
+	@docker run --rm -i -t -v $(CURDIR):/build -v $(BUILD_BASE_DIR):$(BUILD_BASE_DIR) $(BUILDER_IMAGE_NAME):latest
 
 .PHONY: atf
 atf: $(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf
@@ -112,8 +118,8 @@ $(BUILD_BASE_DIR)/u-boot/defconfig.diff: $(BUILD_BASE_DIR)/u-boot/defconfig
 	@diff -u $(CURDIR)/u-boot/configs/nanopi-r4s-rk3399_defconfig \
 		$(BUILD_BASE_DIR)/u-boot/defconfig > $(BUILD_BASE_DIR)/u-boot/defconfig.diff || true
 
-.PHONY: build
-build: $(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin
+.PHONY: image
+image: $(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin
 $(BUILD_BASE_DIR)/u-boot/u-boot-rockchip.bin: $(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf $(BUILD_BASE_DIR)/u-boot/.config
 	@$(MAKE) -C u-boot -j $(shell nproc) \
 		BL31=$(BUILD_BASE_DIR)/atf/rk3399/release/bl31/bl31.elf \

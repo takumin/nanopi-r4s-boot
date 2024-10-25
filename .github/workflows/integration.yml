@@ -17,4 +17,4 @@ jobs:
     - name: Install Packages
       run: sudo make require
     - name: Build
-      run: make
+      run: make image
